@@ -175,7 +175,9 @@ On native Linux the `--add-host host.docker.internal:host-gateway` flag is
 required for the default `RPC_URL` to resolve the host node; on Docker Desktop it
 is optional, and `docker compose up` adds it automatically.
 
-See [`instructions.md`](instructions.md) for operator notes.
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for deploying a release (GHCR image,
+release tarball, systemd, TLS) and [`instructions.md`](instructions.md) for
+operator notes.
 
 ## Security notes
 
