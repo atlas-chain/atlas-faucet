@@ -1,0 +1,32 @@
+services:
+  faucet:
+    build: .
+    image: atlas-faucet
+    container_name: atlas-faucet
+    ports:
+      - "28884:28884"
+    environment:
+      LISTEN_HOST: "0.0.0.0"
+      LISTEN_PORT: "28884"
+      HTML_TITLE: ${HTML_TITLE:-Atlas Faucet}
+      # JSON-RPC endpoint of the Atlas execution node. From inside the container
+      # the host node is reachable at host.docker.internal (see extra_hosts).
+      RPC_URL: ${RPC_URL:-http://host.docker.internal:8545}
+      # Funded faucet account. Defaults to the well-known Atlas dev key
+      # (Hardhat/Foundry/Anvil account #0). MUST be overridden for any shared
+      # or public deployment.
+      FAUCET_PRIVATE_KEY: ${FAUCET_PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}
+      # How much each successful claim receives, in wei (1 ATL by default).
+      FAUCET_DRIP_WEI: ${FAUCET_DRIP_WEI:-1000000000000000000}
+      # Proof-of-work difficulty: `POW_PUZZLES` sub-puzzles each of `POW_BITS`
+      # leading zero bits. Tune for roughly 5 s of multicore browser CPU.
+      POW_BITS: ${POW_BITS:-16}
+      POW_PUZZLES: ${POW_PUZZLES:-480}
+      # At most this many claims may be in the system at once (one is dispensed
+      # at a time; the rest wait, and further claims get HTTP 429).
+      FAUCET_QUEUE_CAPACITY: ${FAUCET_QUEUE_CAPACITY:-2}
+      # Per-address cooldown between successful claims, in seconds (0 disables).
+      FAUCET_COOLDOWN_SECS: ${FAUCET_COOLDOWN_SECS:-60}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

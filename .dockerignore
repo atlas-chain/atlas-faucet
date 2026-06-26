@@ -1,0 +1,9 @@
+target
+dist
+.git
+.github
+.env
+*.log
+.idea
+.claude
+*:Zone.Identifier

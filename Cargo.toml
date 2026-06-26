@@ -1,0 +1,28 @@
+[package]
+name = "atlas-faucet"
+version = "0.1.0"
+edition = "2024"
+description = "Proof-of-work native token faucet for the Atlas Network."
+repository = "https://github.com/atlas-chain/atlas-faucet"
+publish = false
+
+[dependencies]
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "json", "query"] }
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "net", "io-util", "macros", "time", "sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+envy = "0.4"
+time = { version = "0.3", default-features = false, features = ["std", "formatting", "macros"] }
+sha2 = "0.10"
+sha3 = "0.10"
+secp256k1 = { version = "0.31", features = ["recovery"] }
+getrandom = "0.2"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "net", "io-util", "macros", "time", "sync"] }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>__HTML_TITLE__</title>
+<style>
+  :root {
+    --bg: #0b0f17;
+    --panel: #131a26;
+    --panel-2: #0f1521;
+    --border: #243044;
+    --text: #e6edf6;
+    --muted: #8aa0bd;
+    --accent: #4dd0a7;
+    --accent-2: #3a8cff;
+    --danger: #ff6b6b;
+    --warn: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -10%, #16263a 0%, var(--bg) 60%);
+    color: var(--text);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
+  header h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: 0.2px; }
+  header p { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  .row { display: flex; gap: 10px; }
+  input[type=text] {
+    flex: 1;
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    outline: none;
+  }
+  input[type=text]:focus { border-color: var(--accent-2); }
+  button {
+    background: var(--accent);
+    color: #04241a;
+    border: 0;
+    border-radius: 10px;
+    padding: 13px 20px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: filter .15s ease, opacity .15s ease;
+    white-space: nowrap;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .progress { margin-top: 22px; display: none; }
+  .progress.active { display: block; }
+  .bar {
+    height: 14px;
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    transition: width .12s linear;
+  }
+  .meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 13px; flex-wrap: wrap; }
+  .meta b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .result { margin-top: 22px; display: none; }
+  .result.active { display: block; }
+  .alert { border-radius: 10px; padding: 14px 16px; font-size: 14px; }
+  .alert.ok { background: rgba(77,208,167,0.12); border: 1px solid rgba(77,208,167,0.45); }
+  .alert.err { background: rgba(255,107,107,0.10); border: 1px solid rgba(255,107,107,0.45); }
+  .alert.warn { background: rgba(255,180,84,0.10); border: 1px solid rgba(255,180,84,0.45); }
+  .kv { margin-top: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  .kv div { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-top: 1px dashed var(--border); }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { word-break: break-all; text-align: right; }
+  footer { margin-top: 26px; color: var(--muted); font-size: 12px; text-align: center; }
+  .info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+  .info b { color: var(--text); font-family: ui-monospace, Menlo, Consolas, monospace; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>__HTML_TITLE__</h1>
+      <p>Solve a short proof-of-work in your browser, then receive test funds on the Atlas chain.</p>
+    </header>
+
+    <div class="card">
+      <label for="address">Recipient address</label>
+      <div class="row">
+        <input id="address" type="text" placeholder="0x0000000000000000000000000000000000000000" spellcheck="false" autocomplete="off" />
+        <button id="request">Request funds</button>
+      </div>
+      <div class="hint" id="hint">The proof-of-work runs across all your CPU cores and takes only a few seconds.</div>
+
+      <div class="progress" id="progress">
+        <div class="bar"><div id="barFill"></div></div>
+        <div class="meta">
+          <span id="phase">Solving proof-of-work…</span>
+          <span><b id="percent">0%</b></span>
+        </div>
+        <div class="meta">
+          <span>Solved <b id="solved">0</b> / <b id="total">0</b> puzzles</span>
+          <span><b id="rate">0</b> kH/s · <b id="cores">0</b> cores · <b id="elapsed">0.0</b>s</span>
+        </div>
+      </div>
+
+      <div class="result" id="result"></div>
+
+      <div class="info" id="info"></div>
+    </div>
+
+    <footer>Atlas faucet · proof-of-work gated · one drip at a time</footer>
+  </div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const addressInput = $("address");
+const requestBtn = $("request");
+
+let faucetInfo = null;
+
+// Escape any server- or user-influenced string before it touches innerHTML.
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+function hexToBytes(hex) {
+  const clean = hex.startsWith("0x") || hex.startsWith("0X") ? hex.slice(2) : hex;
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(clean.substr(i * 2, 2), 16);
+  return out;
+}
+
+function formatAmount(weiStr) {
+  try {
+    const wei = BigInt(weiStr);
+    const whole = wei / 1000000000000000000n;
+    const frac = (wei % 1000000000000000000n).toString().padStart(18, "0").replace(/0+$/, "");
+    return frac.length ? whole.toString() + "." + frac : whole.toString();
+  } catch (_) { return weiStr; }
+}
+
+async function loadStatus() {
+  try {
+    const res = await fetch("/status");
+    faucetInfo = await res.json();
+    const amount = formatAmount(faucetInfo.dripWei);
+    $("info").innerHTML = [
+      ["Faucet address", faucetInfo.faucetAddress],
+      ["Chain ID", String(faucetInfo.chainId)],
+      ["Drip amount", amount + " ATL"],
+      ["PoW difficulty", faucetInfo.pow.bits + " bits × " + faucetInfo.pow.puzzles + " puzzles"],
+    ].map(([k, v]) => "<span>" + esc(k) + "</span><b>" + esc(v) + "</b>").join("");
+  } catch (_) { /* status is best-effort */ }
+}
+
+// ---- proof-of-work worker (inline, sha256 specialised to a 44-byte preimage) ----
+const workerSource = String.raw`
+const K = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2,
+]);
+const W = new Uint32Array(64);
+function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+// Hash exactly one 512-bit block (the 64-byte 'block' array) into 'out8' (32 bytes).
+function sha256Block(block, out8) {
+  for (let i = 0; i < 16; i++) {
+    const j = i * 4;
+    W[i] = ((block[j] << 24) | (block[j+1] << 16) | (block[j+2] << 8) | block[j+3]) >>> 0;
+  }
+  for (let i = 16; i < 64; i++) {
+    const s0 = rotr(W[i-15], 7) ^ rotr(W[i-15], 18) ^ (W[i-15] >>> 3);
+    const s1 = rotr(W[i-2], 17) ^ rotr(W[i-2], 19) ^ (W[i-2] >>> 10);
+    W[i] = (W[i-16] + s0 + W[i-7] + s1) >>> 0;
+  }
+  let a=0x6a09e667,b=0xbb67ae85,c=0x3c6ef372,d=0xa54ff53a,e=0x510e527f,f=0x9b05688c,g=0x1f83d9ab,h=0x5be0cd19;
+  for (let i = 0; i < 64; i++) {
+    const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+    const ch = (e & f) ^ (~e & g);
+    const t1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+    const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+    const maj = (a & b) ^ (a & c) ^ (b & c);
+    const t2 = (S0 + maj) >>> 0;
+    h=g; g=f; f=e; e=(d+t1)>>>0; d=c; c=b; b=a; a=(t1+t2)>>>0;
+  }
+  const H = [ (a+0x6a09e667)>>>0,(b+0xbb67ae85)>>>0,(c+0x3c6ef372)>>>0,(d+0xa54ff53a)>>>0,
+              (e+0x510e527f)>>>0,(f+0x9b05688c)>>>0,(g+0x1f83d9ab)>>>0,(h+0x5be0cd19)>>>0 ];
+  for (let i = 0; i < 8; i++) {
+    out8[i*4]   = (H[i] >>> 24) & 0xff;
+    out8[i*4+1] = (H[i] >>> 16) & 0xff;
+    out8[i*4+2] = (H[i] >>> 8) & 0xff;
+    out8[i*4+3] = H[i] & 0xff;
+  }
+}
+function leadingZeroBits(d) {
+  let n = 0;
+  for (let i = 0; i < d.length; i++) {
+    if (d[i] === 0) { n += 8; } else { n += Math.clz32(d[i]) - 24; break; }
+  }
+  return n;
+}
+onmessage = function (ev) {
+  const { salt, address, bits, indices } = ev.data;
+  // Fixed 64-byte block: salt(16) | address(20) | k_le(4) | nonce_le(4) | 0x80 | pad | len(=352 bits)
+  const block = new Uint8Array(64);
+  block.set(salt, 0);
+  block.set(address, 16);
+  block[44] = 0x80;
+  block[62] = 0x01; block[63] = 0x60; // 44 bytes * 8 = 352 bits = 0x0160
+  const out = new Uint8Array(32);
+  let sinceReport = 0;
+  for (let idx = 0; idx < indices.length; idx++) {
+    const k = indices[idx];
+    block[36] = k & 0xff; block[37] = (k>>>8)&0xff; block[38] = (k>>>16)&0xff; block[39] = (k>>>24)&0xff;
+    let nonce = 0;
+    for (;;) {
+      block[40] = nonce & 0xff; block[41] = (nonce>>>8)&0xff; block[42] = (nonce>>>16)&0xff; block[43] = (nonce>>>24)&0xff;
+      sha256Block(block, out);
+      sinceReport++;
+      if (leadingZeroBits(out) >= bits) break;
+      nonce++;
+      if (nonce > 0xffffffff) { postMessage({ t: 4, index: k, hashes: sinceReport }); return; }
+      if ((sinceReport & 0x3fff) === 0) { postMessage({ t: 1, hashes: sinceReport }); sinceReport = 0; }
+    }
+    postMessage({ t: 2, index: k, nonce: nonce, hashes: sinceReport });
+    sinceReport = 0;
+  }
+  postMessage({ t: 3 });
+};
+`;
+
+function solvePow(challenge, onProgress, onStart) {
+  return new Promise((resolve, reject) => {
+    const salt = hexToBytes(challenge.salt);
+    const address = hexToBytes(challenge.address);
+    const total = challenge.puzzles;
+    const nonces = new Array(total).fill(0);
+
+    const cores = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, total, 32));
+    const blob = new Blob([workerSource], { type: "application/javascript" });
+    const url = URL.createObjectURL(blob);
+    const workers = [];
+    let solvedCount = 0;
+    let totalHashes = 0;
+    let doneWorkers = 0;
+    let finished = false;
+
+    function cleanup() {
+      for (const w of workers) w.terminate();
+      URL.revokeObjectURL(url);
+    }
+    function fail(err) {
+      if (!finished) { finished = true; cleanup(); reject(err); }
+    }
+
+    if (onStart) onStart(cores);
+
+    try {
+      for (let w = 0; w < cores; w++) {
+        const indices = [];
+        for (let k = w; k < total; k += cores) indices.push(k);
+        const worker = new Worker(url);
+        worker.onmessage = (ev) => {
+          const m = ev.data;
+          if (m.t === 1) {
+            totalHashes += m.hashes;
+            onProgress(solvedCount, total, totalHashes);
+          } else if (m.t === 2) {
+            totalHashes += m.hashes;
+            nonces[m.index] = m.nonce;
+            solvedCount++;
+            onProgress(solvedCount, total, totalHashes);
+          } else if (m.t === 3) {
+            doneWorkers++;
+            if (doneWorkers === cores && !finished) {
+              finished = true;
+              cleanup();
+              resolve(nonces);
+            }
+          } else if (m.t === 4) {
+            fail(new Error("Proof-of-work puzzle " + m.index + " is unsolvable in the browser; the faucet difficulty is misconfigured."));
+          }
+        };
+        worker.onerror = (err) => {
+          fail(new Error(err.message || (err.filename ? err.filename + ":" + err.lineno : "failed to start proof-of-work worker")));
+        };
+        worker.postMessage({ salt, address, bits: challenge.bits, indices });
+        workers.push(worker);
+      }
+    } catch (e) {
+      fail(e instanceof Error ? e : new Error(String(e)));
+      return;
+    }
+    onProgress(0, total, 0);
+  });
+}
+
+function setProgressUI(active) {
+  $("progress").classList.toggle("active", active);
+}
+
+function showResult(kind, html) {
+  const el = $("result");
+  el.className = "result active";
+  el.innerHTML = '<div class="alert ' + kind + '">' + html + "</div>";
+}
+
+function clearResult() {
+  const el = $("result");
+  el.className = "result";
+  el.innerHTML = "";
+}
+
+async function run() {
+  clearResult();
+  const address = addressInput.value.trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    showResult("err", "Please enter a valid 0x-prefixed 40-hex-character address.");
+    return;
+  }
+
+  requestBtn.disabled = true;
+  addressInput.disabled = true;
+  setProgressUI(true);
+  $("phase").textContent = "Requesting challenge…";
+  $("percent").textContent = "0%";
+  $("solved").textContent = "0";
+  $("total").textContent = "0";
+  $("rate").textContent = "0";
+  $("elapsed").textContent = "0.0";
+  // Snap the bar back to 0 without animating backwards from a prior run.
+  const bar = $("barFill");
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+  void bar.offsetWidth;
+  bar.style.transition = "";
+
+  let ticker = null;
+  try {
+    const cres = await fetch("/api/challenge?address=" + encodeURIComponent(address));
+    const cbody = await cres.json();
+    if (!cres.ok) {
+      const code = cbody.error ? cbody.error.code : "ERROR";
+      const msg = cbody.error ? cbody.error.message : "could not get a challenge";
+      showResult(code === "COOLDOWN" ? "warn" : "err", esc(msg));
+      throw new Error("challenge rejected");
+    }
+    const challenge = cbody.challenge;
+    $("total").textContent = String(challenge.puzzles);
+    $("phase").textContent = "Solving proof-of-work…";
+
+    const start = performance.now();
+    let lastHashes = 0;
+    ticker = setInterval(() => {
+      const elapsed = (performance.now() - start) / 1000;
+      $("elapsed").textContent = elapsed.toFixed(1);
+      $("rate").textContent = (lastHashes / Math.max(elapsed, 0.001) / 1000).toFixed(0);
+    }, 150);
+
+    const onProgress = (solved, total, hashes) => {
+      lastHashes = hashes;
+      const pct = total > 0 ? Math.floor((solved / total) * 100) : 0;
+      bar.style.width = pct + "%";
+      $("percent").textContent = pct + "%";
+      $("solved").textContent = String(solved);
+    };
+    const onStart = (cores) => { $("cores").textContent = String(cores); };
+
+    const nonces = await solvePow(challenge, onProgress, onStart);
+    clearInterval(ticker);
+    ticker = null;
+    bar.style.width = "100%";
+    $("percent").textContent = "100%";
+    $("phase").textContent = "Submitting transaction…";
+
+    const claimRes = await fetch("/api/claim", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ challenge, nonces }),
+    });
+    const claimBody = await claimRes.json();
+
+    if (!claimRes.ok) {
+      const code = claimBody.error ? claimBody.error.code : "ERROR";
+      const msg = claimBody.error ? claimBody.error.message : "claim failed";
+      const kind = (code === "FAUCET_BUSY" || code === "COOLDOWN") ? "warn" : "err";
+      showResult(kind, esc(msg));
+      return;
+    }
+
+    const amount = formatAmount(claimBody.amountWei);
+    let statusLine;
+    if (claimBody.mined) {
+      statusLine = "Mined in block " + esc(claimBody.blockNumber);
+      if (claimBody.transferred === false) {
+        statusLine += " — but the transfer reverted (is the recipient a contract that rejects funds?)";
+      }
+    } else {
+      statusLine = "Submitted (pending confirmation)";
+    }
+    const kind = claimBody.transferred === false ? "warn" : "ok";
+    showResult(kind,
+      "<b>Sent " + esc(amount) + " ATL</b> to your address." +
+      '<div class="kv">' +
+      "<div><span>recipient</span><span>" + esc(claimBody.address) + "</span></div>" +
+      "<div><span>tx hash</span><span>" + esc(claimBody.txHash) + "</span></div>" +
+      "<div><span>status</span><span>" + statusLine + "</span></div>" +
+      "</div>"
+    );
+  } catch (err) {
+    if (!$("result").classList.contains("active")) {
+      showResult("err", esc("Something went wrong: " + err.message));
+    }
+  } finally {
+    if (ticker) { clearInterval(ticker); ticker = null; }
+    requestBtn.disabled = false;
+    addressInput.disabled = false;
+    $("phase").textContent = "Done";
+  }
+}
+
+requestBtn.addEventListener("click", run);
+addressInput.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+loadStatus();
+</script>
+</body>
+</html>

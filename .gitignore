@@ -1,0 +1,11 @@
+target
+dist
+.idea
+.claude
+*.log
+*:Zone.Identifier
+.env
+
+# Local validation / tooling artifacts
+.playwright-mcp/
+faucet-*.png
